@@ -286,7 +286,7 @@ class UI(QMainWindow):
             self.AddVideo()
 
     def onAddVideoProgress(self, n):
-        self.progressBar.setValue(n*100)
+        self.progressBar.setValue(int(n*100))
 
     def closeEvent(self, ev):
         # Needs: pip install odfpy
