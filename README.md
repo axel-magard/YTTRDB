@@ -3,7 +3,8 @@ YTTRDB is a tool to capture and store transcripts from youtube videos and make t
 
   ## Implementation
   YTTRDB is written in Python and used
-  * PyQt6 for the Graphical User Interface. [The excellent Python API package by Jonas Depoix](https://github.com/jdepoix/youtube-transcript-api) is used to fetch youtube video
+  * PyQt6 for the Graphical User Interface.
+  * [The excellent Python API package by Jonas Depoix](https://github.com/jdepoix/youtube-transcript-api) is used to fetch youtube video
   transacripts for a given video.
   * [PyTube](https://github.com/pytube/pytube) is used to retrieve video titles.
   * SqLite3 is used a databse backend.
