@@ -180,7 +180,7 @@ class UI(QMainWindow):
 
     def listRows(self,searchText=""):
         QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
-        self.data = list_data(self.cur,searchText)
+        self.data = list_data(self.con,self.cur,searchText)
         self.displayData = []
         for r in self.data:
             self.displayData.append([r[-1],r[1]])

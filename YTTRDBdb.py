@@ -38,12 +38,17 @@ def insert_title(con, cur, video_id, title):
             insert_title(con,cur,video_id,title)
 
 
-def list_data(cur, searchPattern = ""):
+def list_data(con, cur, searchPattern = ""):
     qry = "SELECT content.video_id, ts, text, (SELECT title from videos WHERE videos.video_id = content.video_id) FROM content "
     if searchPattern:
         qry += " WHERE text like '%" + searchPattern + "%' "
-    res = cur.execute(qry)
-    data = res.fetchall()
+    try:
+        res = cur.execute(qry)
+    except sqlite3.OperationalError as ex:
+        if handleDBError(con,cur,qry,ex):
+            list_data(con,cur,searchPattern)
+    else:
+        data = res.fetchall()
     d = []
     # Convert row tuples to lists
     for row in data:
