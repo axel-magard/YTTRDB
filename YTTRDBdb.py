@@ -84,6 +84,8 @@ def fetch_transcript(con,cur,video_id = "gnRfvaSTgG8", signal = None):
         transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=['de',])
     except _errors.TranscriptsDisabled:
         return(-1)
+    except:
+        return(-1)
     size = 30
     duration = 0.0
     text = ""

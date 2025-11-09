@@ -83,9 +83,12 @@ class Worker(QRunnable):
         """Your long-running job goes in this method."""
         con = sqlite3.connect("YTTRDB.db")
         cur = con.cursor()
-        fetch_transcript(con,cur,self.video_id,self.signals.progress)
+        rc = fetch_transcript(con,cur,self.video_id,self.signals.progress)
         con.close()
-        self.signals.finished.emit()
+        if rc == -1:
+            self.signals.error.emit((0,0))
+        else:
+            self.signals.finished.emit()
 
 class AddVideoDlg(QDialog):
     def __init__(self, parent=None):
@@ -271,6 +274,7 @@ class UI(QMainWindow):
             self.status.showMessage("%d record(s) in database. Adding video %s ...." % (self.cnt,self.videoQueue[-1] ))
         worker = Worker(self.videoQueue[-1])
         worker.signals.finished.connect(self.onAddVideoDone)
+        worker.signals.error.connect(self.onAddVideoFailed)
         worker.signals.progress.connect(self.onAddVideoProgress)
         self.threadpool.start(worker)
 
@@ -279,6 +283,14 @@ class UI(QMainWindow):
         insert_title(self.con,self.cur,self.videoQueue[-1],title)
         self.cnt = self.listRows(self.text1.text())
         self.status.showMessage("%d record(s) and %d videos in database after adding video %s." % (self.cnt,len(self.videos),self.videoQueue[-1] ) )
+        self.progressBar.setValue(0)
+        QApplication.restoreOverrideCursor()
+        v = self.videoQueue.pop()
+        if self.videoQueue:
+            self.AddVideo()
+
+    def onAddVideoFailed(self):
+        self.status.showMessage("Fetching transcript for video %s failed." % (self.videoQueue[-1], ) )
         self.progressBar.setValue(0)
         QApplication.restoreOverrideCursor()
         v = self.videoQueue.pop()
