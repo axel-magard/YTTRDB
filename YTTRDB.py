@@ -76,15 +76,16 @@ class WorkerSignals(QObject):
 
 class Worker(QRunnable):
     """Worker thread."""
-    def __init__(self, video_id):
+    def __init__(self, video_id, db):
         super().__init__()
         self.video_id = video_id
+        self.db = db
         self.signals = WorkerSignals()
 
     @pyqtSlot()
     def run(self):
         """Your long-running job goes in this method."""
-        con = sqlite3.connect("YTTRDB.db")
+        con = sqlite3.connect(self.db)
         cur = con.cursor()
         rc = fetch_transcript(con,cur,self.video_id,self.signals.progress)
         con.close()
@@ -119,13 +120,19 @@ class UI(QMainWindow):
     def __init__(self):
         super(UI, self).__init__()
 
+        self.db = "YTTRDB.db"
+        if len(sys.argv) > 1:
+            self.db = sys.argv[1]
+            if not self.db.endswith(".db"):
+                self.db += ".db"
+
         # Set some properties
         self.tableView = None
         self.bChanged = False
         self.sel = -1
 
         # Access database
-        self.con = sqlite3.connect("YTTRDB.db")
+        self.con = sqlite3.connect(self.db)
         self.cur = self.con.cursor()
 
         # Load the ui file
@@ -179,7 +186,7 @@ class UI(QMainWindow):
         QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
         try:
             self.cnt = self.listRows()
-            self.status.showMessage("%d record(s) and %d videos in database." % (self.cnt,len(self.videos)) )
+            self.status.showMessage("%d record(s) and %d videos in database %s." % (self.cnt,len(self.videos),self.db) )
         except FileNotFoundError:
             self.status.showMessage("Hey, welcome to YTTRDB.py !")
         QApplication.restoreOverrideCursor()
@@ -254,7 +261,7 @@ class UI(QMainWindow):
     def onAddVideo(self, s):
         self.videoQueue = []
         self.pl_id = ""
-        self.status.showMessage("%d record(s) and %d videos in database." % (self.cnt,len(self.videos) ))
+        self.status.showMessage("%d record(s) and %d videos in database %s." % (self.cnt,len(self.videos),self.db ))
         dlg = AddVideoDlg(self)
         dlg.exec()
         if dlg.video_id and dlg.video_id not in self.videos:
@@ -274,10 +281,10 @@ class UI(QMainWindow):
         QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
         if self.noVideos > 1:
             l = len(self.videoQueue)
-            self.status.showMessage("%d record(s) in database. Adding video %d/%d ..." % (self.cnt,self.noVideos - l + 1,self.noVideos ))
+            self.status.showMessage("%d record(s) in database %s. Adding video %d/%d ..." % (self.cnt,self.db,self.noVideos - l + 1,self.noVideos ))
         else:
-            self.status.showMessage("%d record(s) in database. Adding video %s ...." % (self.cnt,self.videoQueue[-1] ))
-        worker = Worker(self.videoQueue[-1])
+            self.status.showMessage("%d record(s) in database %s. Adding video %s ...." % (self.cnt,self.db,self.videoQueue[-1] ))
+        worker = Worker(self.videoQueue[-1],self.db)
         worker.signals.finished.connect(self.onAddVideoDone)
         worker.signals.error.connect(self.onAddVideoFailed)
         worker.signals.progress.connect(self.onAddVideoProgress)
@@ -287,7 +294,7 @@ class UI(QMainWindow):
         title = getVideoTitle(self.videoQueue[-1])
         insert_title(self.con,self.cur,self.videoQueue[-1],title)
         self.cnt = self.listRows(self.text1.text())
-        self.status.showMessage("%d record(s) and %d videos in database after adding video %s." % (self.cnt,len(self.videos),self.videoQueue[-1] ) )
+        self.status.showMessage("%d record(s) and %d videos in database %s after adding video %s." % (self.cnt,len(self.videos),self.db,self.videoQueue[-1] ) )
         self.progressBar.setValue(0)
         QApplication.restoreOverrideCursor()
         v = self.videoQueue.pop()
