@@ -81,10 +81,9 @@ def handleDBError(con,cur,sql,ex):
 
 def fetch_transcript(con,cur,video_id = "gnRfvaSTgG8", signal = None):
     try:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=['de',])
+        ytt_api = YouTubeTranscriptApi()
+        transcript = ytt_api.fetch(video_id, languages=['de',])
     except _errors.TranscriptsDisabled:
-        return(-1)
-    except:
         return(-1)
     size = 30
     duration = 0.0
@@ -97,9 +96,9 @@ def fetch_transcript(con,cur,video_id = "gnRfvaSTgG8", signal = None):
         if signal:
             signal.emit(cnt/len(transcript))
         if ts == -1:
-            ts = j["start"]
-        duration += j["duration"]
-        text += j["text"] + " "
+            ts = j.start
+        duration += j.duration
+        text += j.text + " "
         if duration > size:
             insert_values(con,cur,video_id,ts,duration,text)
             duration = 0.0
