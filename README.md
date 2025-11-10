@@ -24,7 +24,7 @@ YTTRDB is a tool to capture and store transcripts from youtube videos and make t
   ## Usage
   Start with this command:
   ```
-  python -W ignore YTTRDB.py
+  python -W ignore YTTRDB.py [DB_FILE]
   ```
 
   The main windows will be shown and lists all transcript records stored so far. For each record it shows video title and timestamp. When a record is selected the text of the transcript at the given time stamp is displayed on the right.
@@ -39,3 +39,5 @@ YTTRDB is a tool to capture and store transcripts from youtube videos and make t
   When a playlist url has been specified all the videos found in that playlist will be added to the YTTRDB database.
 
 
+  ## Limitations
+  The script only supports videos in German language; no option yet to specify a different language
