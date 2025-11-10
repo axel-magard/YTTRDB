@@ -47,6 +47,7 @@ def list_data(con, cur, searchPattern = ""):
     except sqlite3.OperationalError as ex:
         if handleDBError(con,cur,qry,ex):
             list_data(con,cur,searchPattern)
+            return []
     else:
         data = res.fetchall()
     d = []

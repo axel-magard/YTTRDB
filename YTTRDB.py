@@ -43,7 +43,10 @@ class TableModel(QtCore.QAbstractTableModel):
     def columnCount(self, index):
         # The following takes the first sub-list, and returns
         # the length (only works if all rows are an equal length)
-        return len(self._data[0])
+        if self._data:
+            return len(self._data[0])
+        else:
+            return 0
 
     def headerData(self, section, orientation, role):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
@@ -202,7 +205,8 @@ class UI(QMainWindow):
         self.tableView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.tableView.clicked.connect(self.tableViewClicked)
         header = self.tableView.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        if self.data:
+            header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.tableView.show()
         self.onNext()
         QApplication.restoreOverrideCursor()
@@ -237,7 +241,8 @@ class UI(QMainWindow):
         if self.sel >= len(self.data):
             self.sel = 0
         self.tableView.selectRow(self.sel)
-        self.textBrowser.setText(HTML % (self.data[self.sel][-1],self.data[self.sel][-2]))
+        if self.data:
+            self.textBrowser.setText(HTML % (self.data[self.sel][-1],self.data[self.sel][-2]))
 
     def onPrevious(self):
         self.sel -= 1
